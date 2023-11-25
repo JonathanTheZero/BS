@@ -8,7 +8,7 @@ public class Simulation {
 		
 		new Sicherung(server).start();
 		
-		for(int i=0;i<1000;i++){
+		for(int i=0;i<100;i++){
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {}
