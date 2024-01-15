@@ -8,7 +8,7 @@ public class Ferryboat extends Thread {
 	public Ferryboat(int max) {
 		this.maxCars = max;
 		west = true;
-		beenUnloaded = false;
+		beenUnloaded = true;
 		numberCars = 0;
 	}
 
@@ -20,7 +20,7 @@ public class Ferryboat extends Thread {
 	}
 
 	public synchronized void enter(int carId, boolean carPosition) {
-		while (west != carPosition) {
+		while (west != carPosition || !beenUnloaded || numberCars > maxCars) {
 			try {
 				System.out.println("Car" + carId + ": muss auf Einfahrt warten: " + carPosition + " Anz: " + numberCars
 						+ " Entladen: " + beenUnloaded);
@@ -28,13 +28,13 @@ public class Ferryboat extends Thread {
 			} catch (InterruptedException e) {
 			}
 		}
-		System.out.println("Car" + carId + ": ist auf Fähre. Anz: " + numberCars);
 		numberCars++;
+		System.out.println("Car" + carId + ": ist auf Fähre. Anz: " + numberCars);
 		notify();
 	}
 
 	public synchronized void leave(int carId, boolean oldCarPosition) {
-		while (oldCarPosition != west) {
+		while (oldCarPosition == west) {
 			try {
 				System.out.println("Car" + carId + ": muss auf Ausfahrt warten: " + oldCarPosition + " Anz: "
 						+ numberCars + " Entladen: " + beenUnloaded);
@@ -50,7 +50,7 @@ public class Ferryboat extends Thread {
 	}
 
 	public synchronized void goEast() {
-		while (numberCars < maxCars) {
+		while (!west || numberCars < maxCars) {
 			try {
 				System.out
 						.println("Fähre: muss warten: " + west + " Anz: " + numberCars + " Entladen: " + beenUnloaded);
@@ -60,12 +60,12 @@ public class Ferryboat extends Thread {
 		}
 		beenUnloaded = false;
 		System.out.println("Fähre: goEast");
-		
+		west = false;
 		notifyAll();
 	}
-	
+
 	public synchronized void goWest() {
-		while (numberCars < maxCars) {
+		while (west ||numberCars < maxCars) {
 			try {
 				System.out
 						.println("Fähre: muss warten: " + west + " Anz: " + numberCars + " Entladen: " + beenUnloaded);
@@ -75,7 +75,7 @@ public class Ferryboat extends Thread {
 		}
 		beenUnloaded = false;
 		System.out.println("Fähre: goWest");
-		
+		west = true;
 		notifyAll();
 	}
 }
